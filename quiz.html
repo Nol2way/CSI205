@@ -1,0 +1,910 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>แบบทดสอบสิ่งแวดล้อม - CSI205</title>
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+        min-height: 100vh;
+        padding: 20px;
+        color: #333;
+      }
+      .container {
+        max-width: 860px;
+        margin: 0 auto;
+      }
+      header {
+        background: #2e7d32;
+        color: white;
+        padding: 24px 32px;
+        border-radius: 12px;
+        margin-bottom: 24px;
+        text-align: center;
+        box-shadow: 0 4px 12px rgba(46,125,50,0.3);
+      }
+      header h1 { font-size: 1.8rem; margin-bottom: 6px; }
+      header p { font-size: 0.95rem; opacity: 0.9; }
+      .back-link {
+        display: inline-block;
+        margin-bottom: 16px;
+        color: #2e7d32;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.95rem;
+      }
+      .back-link:hover { text-decoration: underline; }
+      .question-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px 24px;
+        margin-bottom: 18px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        border-left: 4px solid #4caf50;
+        transition: box-shadow 0.2s;
+      }
+      .question-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
+      .question-number {
+        font-size: 0.8rem;
+        color: #2e7d32;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+      }
+      .question-text {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 14px;
+        line-height: 1.5;
+      }
+      .options { display: flex; flex-direction: column; gap: 8px; }
+      .option {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 10px 14px;
+        border-radius: 8px;
+        border: 2px solid #e0e0e0;
+        cursor: pointer;
+        transition: all 0.15s;
+        font-size: 0.95rem;
+        line-height: 1.4;
+        background: #fafafa;
+      }
+      .option:hover { border-color: #4caf50; background: #f1f8e9; }
+      .option input[type="radio"] { margin-top: 2px; flex-shrink: 0; accent-color: #2e7d32; }
+      .option label { cursor: pointer; flex: 1; }
+      .option.correct { border-color: #4caf50; background: #e8f5e9; }
+      .option.incorrect { border-color: #ef5350; background: #ffebee; }
+      .option.reveal-correct { border-color: #4caf50; background: #e8f5e9; }
+      .option.correct::after { content: ' ✓'; color: #2e7d32; font-weight: 700; }
+      .option.incorrect::after { content: ' ✗'; color: #c62828; font-weight: 700; }
+      .btn-submit {
+        display: block;
+        width: 100%;
+        padding: 16px;
+        background: #2e7d32;
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 1.1rem;
+        font-weight: 700;
+        cursor: pointer;
+        margin: 24px 0;
+        transition: background 0.2s, transform 0.1s;
+        box-shadow: 0 4px 12px rgba(46,125,50,0.3);
+      }
+      .btn-submit:hover { background: #1b5e20; transform: translateY(-1px); }
+      .btn-submit:active { transform: translateY(0); }
+      .btn-submit:disabled { background: #9e9e9e; cursor: not-allowed; transform: none; box-shadow: none; }
+      .score-card {
+        display: none;
+        background: white;
+        border-radius: 12px;
+        padding: 32px;
+        text-align: center;
+        margin-bottom: 24px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+        border-top: 6px solid #4caf50;
+      }
+      .score-card.show { display: block; }
+      .score-number { font-size: 3.5rem; font-weight: 800; color: #2e7d32; }
+      .score-label { font-size: 1.1rem; color: #555; margin-bottom: 12px; }
+      .score-msg { font-size: 1rem; color: #333; line-height: 1.6; }
+      .score-bar-container { background: #e0e0e0; border-radius: 999px; height: 12px; margin: 16px 0; overflow: hidden; }
+      .score-bar { height: 100%; border-radius: 999px; background: linear-gradient(90deg, #4caf50, #2e7d32); transition: width 0.8s ease; }
+      .btn-retry {
+        display: inline-block;
+        margin-top: 16px;
+        padding: 10px 28px;
+        background: #f1f8e9;
+        color: #2e7d32;
+        border: 2px solid #4caf50;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.15s;
+      }
+      .btn-retry:hover { background: #dcedc8; }
+      .progress-bar-container {
+        background: #c8e6c9;
+        border-radius: 999px;
+        height: 8px;
+        margin-bottom: 20px;
+        overflow: hidden;
+      }
+      .progress-bar-fill {
+        height: 100%;
+        background: #2e7d32;
+        border-radius: 999px;
+        transition: width 0.3s;
+      }
+      .progress-label { font-size: 0.85rem; color: #2e7d32; margin-bottom: 6px; font-weight: 600; }
+      footer {
+        text-align: center;
+        color: #555;
+        font-size: 0.85rem;
+        margin-top: 24px;
+        padding-bottom: 20px;
+      }
+      @media (max-width: 600px) {
+        header h1 { font-size: 1.4rem; }
+        .question-card { padding: 16px; }
+        .score-number { font-size: 2.8rem; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <a class="back-link" href="/CSI205/">← กลับหน้าหลัก</a>
+      <header>
+        <h1>🌿 แบบทดสอบสิ่งแวดล้อมและ Zero Waste</h1>
+        <p>CSI205 | สิทธา ว่องคุณากร | 67129568</p>
+      </header>
+
+      <div id="scoreCard" class="score-card">
+        <div class="score-number" id="scoreNum">0/60</div>
+        <div class="score-label">คะแนนของคุณ</div>
+        <div class="score-bar-container">
+          <div class="score-bar" id="scoreBar" style="width:0%"></div>
+        </div>
+        <div class="score-msg" id="scoreMsg"></div>
+        <button class="btn-retry" onclick="retryQuiz()">ทำแบบทดสอบอีกครั้ง</button>
+      </div>
+
+      <div class="progress-label" id="progressLabel">คำถาม 0 / 60 ข้อที่ตอบแล้ว</div>
+      <div class="progress-bar-container">
+        <div class="progress-bar-fill" id="progressBar" style="width:0%"></div>
+      </div>
+
+      <form id="quizForm" novalidate></form>
+
+      <button class="btn-submit" id="submitBtn" onclick="submitQuiz()">ส่งคำตอบและดูผลคะแนน</button>
+
+      <footer>
+        <p>แบบทดสอบความรู้ด้านสิ่งแวดล้อมและการจัดการทรัพยากร</p>
+      </footer>
+    </div>
+
+    <script>
+      const questions = [
+        {
+          q: "ข้อใดคือแนวทางที่สอดคล้องกับแนวคิด Zero Waste",
+          opts: [
+            "ปฏิเสธการรับถุงพลาสติกจากร้านค้า",
+            "ฝังกลบขยะในที่ดินว่างเปล่า",
+            "ใช้กล่องพลาสติกใช้แล้วทิ้ง",
+            "เผาขยะเพื่อผลิตพลังงาน"
+          ],
+          ans: 0
+        },
+        {
+          q: "ข้อใด ไม่ใช่ สาเหตุของปัญหาขยะมูลฝอยในประเทศไทย",
+          opts: [
+            "การแยกขยะอย่างถูกต้อง",
+            "การบริโภคแบบใช้ครั้งเดียวแล้วทิ้ง",
+            "การเพิ่มจำนวนประชากรในเมือง",
+            "การจัดการขยะไม่มีประสิทธิภาพ"
+          ],
+          ans: 0
+        },
+        {
+          q: "พฤติกรรมในข้อใดที่ไม่ช่วยลดคาร์บอนฟุตพรินท์",
+          opts: [
+            "ลดการบริโภคเนื้อสัตว์",
+            "ใช้หลอดไฟประหยัดพลังงาน",
+            "ใช้รถจักรยานแทนรถยนต์",
+            "ช็อปปิ้งออนไลน์"
+          ],
+          ans: 3
+        },
+        {
+          q: "ข้อใดเป็นสาเหตุที่ทำให้เกิดโรคอิไตอิไต",
+          opts: [
+            "สารหนู",
+            "สารปรอท",
+            "สารแคลเซียม",
+            "สารแคดเมียม"
+          ],
+          ans: 3
+        },
+        {
+          q: "ข้อใดคือคำจำกัดความของ \"รอยเท้าวัสดุ (Material footprint)\" ที่ถูกต้องที่สุดตามที่ระบุในเอกสาร",
+          opts: [
+            "จำนวนขยะอันตรายที่เกิดขึ้นจากการบริโภคสินค้าต่อหัวประชากร",
+            "ปริมาณการปล่อยก๊าซคาร์บอนไดออกไซด์จากการผลิตวัสดุ",
+            "ปริมาณของวัสดุที่ถูกสกัดและดึงมาใช้ตามความต้องการภายในท้องถิ่น",
+            "พื้นที่ทางกายภาพที่ต้องใช้ในการผลิตทรัพยากรเพื่อการบริโภค"
+          ],
+          ans: 2
+        },
+        {
+          q: "สิ่งใดเป็นสาเหตุหลักของการขาดแคลนน้ำในหลายประเทศ",
+          opts: [
+            "การสูญเสียพื้นที่ป่า",
+            "การปลูกพืชที่ใช้น้ำมาก",
+            "การเจริญเติบโตของประชากร",
+            "การเปลี่ยนแปลงสภาพภูมิอากาศ"
+          ],
+          ans: 3
+        },
+        {
+          q: "ข้อใดต่อไปนี้เป็นตัวอย่างของผู้ผลิตในระบบนิเวศ",
+          opts: [
+            "เห็ด",
+            "สุนัข",
+            "สาหร่าย",
+            "นก"
+          ],
+          ans: 2
+        },
+        {
+          q: "หน่วยที่ใช้วัดคาร์บอนฟุตพรินท์คือข้อใด",
+          opts: [
+            "กิโลเมตร CO₂ เทียบเท่า",
+            "เมตร CO₂ เทียบเท่า",
+            "ลิตร CO₂ เทียบเท่า",
+            "กิโลกรัม CO₂ เทียบเท่า"
+          ],
+          ans: 3
+        },
+        {
+          q: "ปลูกต้นดาวเรืองเพื่อช่วยในการไล่แมลงในแปลงผักตรงกับทฤษฏี R ข้อใด",
+          opts: [
+            "Reuse",
+            "Reduce",
+            "Reject",
+            "Recycle"
+          ],
+          ans: 2
+        },
+        {
+          q: "มลพิษทางดินจากขยะมูลฝอยสามารถทำให้เกิดอะไรได้บ้าง",
+          opts: [
+            "การลดความหลากหลายทางชีวภาพ",
+            "การทำให้ดินอุดมสมบูรณ์มากขึ้น",
+            "การเพิ่มคุณภาพของดิน",
+            "การเพิ่มปริมาณน้ำจืดในดิน"
+          ],
+          ans: 0
+        },
+        {
+          q: "การปนเปื้อนของน้ำด้วยสารพิษสามารถทำให้เกิดอะไรได้บ้าง",
+          opts: [
+            "การบำบัดน้ำเสียให้สะอาด",
+            "การตายของสิ่งมีชีวิตในน้ำและอาจทำให้มนุษย์เจ็บป่วย",
+            "การเพิ่มความหลากหลายของชีวิตในแหล่งน้ำ",
+            "การสร้างแหล่งน้ำจืดใหม่"
+          ],
+          ans: 1
+        },
+        {
+          q: "ถุงพลาสติกใช้เวลาในการย่อยสลายนานประมาณกี่ปี",
+          opts: [
+            "1–5 ปี",
+            "10–20 ปี",
+            "100–1,000 ปี",
+            "ไม่สามารถย่อยสลายได้เลย"
+          ],
+          ans: 2
+        },
+        {
+          q: "ข้อใดเป็นสาเหตุที่ทำให้เกิดปรากฏการณ์ปะการังฟอกขาว",
+          opts: [
+            "สาหร่ายในทะเลลดลง",
+            "แบคทีเรียในทะเลลดลง",
+            "ออกซิเจนในน้ำเพิ่มขึ้น",
+            "อุณหภูมิของน้ำทะเลสูงขึ้น"
+          ],
+          ans: 3
+        },
+        {
+          q: "ข้อใดคือสาเหตุหลักของการเกิด \"น้ำเสียจากการเกษตร\"",
+          opts: [
+            "การคายน้ำจากทะเล",
+            "การใช้สารเคมี ปุ๋ย ยาฆ่าแมลงในปริมาณมาก",
+            "การขาดการจัดการขยะในที่โล่ง",
+            "การปล่อยน้ำจากโรงงานอุตสาหกรรมลงในแม่น้ำ"
+          ],
+          ans: 1
+        },
+        {
+          q: "วิธีการใดที่มีประสิทธิภาพสูงสุดในการลดมลพิษทางอากาศจากยานพาหนะ",
+          opts: [
+            "ใช้เชื้อเพลิงฟอสซิลที่มีคุณภาพสูงขึ้น",
+            "ลดจำนวนต้นไม้ในเมืองเพื่อเพิ่มพื้นที่จอดรถ",
+            "เพิ่มปริมาณรถยนต์ส่วนบุคคลบนท้องถนน",
+            "ส่งเสริมการใช้พลังงานหมุนเวียนและยานพาหนะไฟฟ้า"
+          ],
+          ans: 3
+        },
+        {
+          q: "ข้อใด ไม่ใช่ แหล่งมลพิษทางอากาศที่อยู่กับที่",
+          opts: [
+            "โรงงานคัดแยกขยะ",
+            "เรือเฟอร์รี่",
+            "โรงงานผลิตกระแสไฟฟ้าถ่านหิน",
+            "เมรุ"
+          ],
+          ans: 1
+        },
+        {
+          q: "การเลือกซื้อสินค้าที่มีฉลาก Carbon Footprint ช่วยในเรื่องใด",
+          opts: [
+            "ช่วยให้ผู้บริโภคเลือกผลิตภัณฑ์ที่ปล่อยก๊าซเรือนกระจกน้อยกว่า",
+            "ช่วยให้ผู้บริโภคประหยัดค่าใช้จ่ายในการซื้อสินค้า",
+            "ช่วยให้ผู้บริโภคทราบปริมาณขยะที่ผลิตภัณฑ์นั้นสร้างขึ้น",
+            "ช่วยให้ผู้บริโภคทราบว่าผลิตภัณฑ์นั้นสามารถรีไซเคิลได้หรือไม่"
+          ],
+          ans: 0
+        },
+        {
+          q: "ผู้บริโภคลำดับสุดท้ายของห่วงโซ่อาหารได้รับพลังงานเท่าไร",
+          opts: [
+            "10%",
+            "90%",
+            "40%",
+            "70%"
+          ],
+          ans: 0
+        },
+        {
+          q: "สารพิษในข้อใดที่เกิดจากการทำเหมืองแร่ทองแดง",
+          opts: [
+            "โพแทสเซียม",
+            "แคลเซียม",
+            "แมกนีเซียม",
+            "ไซยาไนด์"
+          ],
+          ans: 3
+        },
+        {
+          q: "น้ำเสียจากโรงงานผลิตผงซักฟอกมีสารปนเปื้อนในข้อใด",
+          opts: [
+            "สารกัมมันตรังสี",
+            "สารอนินทรีย์",
+            "เชื้อโรค",
+            "สารกัดโลหะ"
+          ],
+          ans: 1
+        },
+        {
+          q: "ข้อใดส่งผลกระทบจากภาวะวิกฤตด้านทรัพยากร",
+          opts: [
+            "การพัฒนาเทคโนโลยีใหม่",
+            "ความขัดแย้งในชุมชน",
+            "การลดการใช้ทรัพยากร",
+            "การเพิ่มผลผลิตการเกษตร"
+          ],
+          ans: 1
+        },
+        {
+          q: "บริการเชิงวัฒนธรรมในระบบนิเวศหมายถึงอะไร",
+          opts: [
+            "การสนับสนุนความหลากหลายทางชีวภาพ",
+            "บริการที่ให้ทรัพยากรธรรมชาติ",
+            "การให้ความรู้และประสบการณ์แก่ผู้คน",
+            "การควบคุมมลพิษ"
+          ],
+          ans: 2
+        },
+        {
+          q: "ข้อใดเป็นแก๊สที่เกิดจากการเผาไหม้เชื้อเพลิงถ่านหิน (ก่อให้เกิดฝนกรด)",
+          opts: [
+            "ซัลเฟอร์ไดออกไซด์",
+            "ไนโตรเจนไดออกไซด์",
+            "คาร์บอนมอนอกไซด์",
+            "ไฮโดรเจนไดออกไซด์"
+          ],
+          ans: 0
+        },
+        {
+          q: "ประเพณีวิ่งควาย จัดเป็นสิ่งแวดล้อมประเภทใด",
+          opts: [
+            "Social Environment",
+            "Biotic Environment",
+            "Abiotic Environment",
+            "Physical Environment"
+          ],
+          ans: 0
+        },
+        {
+          q: "ข้อใดคือผลกระทบที่เกิดจากปรากฏการณ์เอลนิโญ",
+          opts: [
+            "อุณหภูมิน้ำทะเลลดลงต่ำสุด",
+            "อุณหภูมิของแม่น้ำโขงสูงขึ้น",
+            "อุณหภูมิน้ำทะเลสูงขึ้น",
+            "ทำให้จุลินทรีย์ในน้ำเสียเพิ่มมากขึ้น"
+          ],
+          ans: 2
+        },
+        {
+          q: "ข้อใด ไม่ใช่ ขยะที่สามารถนำไปรีไซเคิลได้",
+          opts: [
+            "ขวดแก้วที่เปียกน้ำ",
+            "ถุงพลาสติกสะอาด",
+            "กล่องโฟมเปื้อนอาหาร",
+            "กระดาษที่แห้งและสะอาด"
+          ],
+          ans: 2
+        },
+        {
+          q: "ข้อใดคือลักษณะของมลพิษน้ำที่เกิดจากอุตสาหกรรม",
+          opts: [
+            "การเกิดการเจริญเติบโตของพืชน้ำ",
+            "การปนเปื้อนด้วยสารอาหารจากธรรมชาติ",
+            "การปล่อยสารเคมีหรือโลหะหนักลงในแหล่งน้ำ",
+            "การเพิ่มปริมาณของสัตว์น้ำในแม่น้ำ"
+          ],
+          ans: 2
+        },
+        {
+          q: "ข้อใด ไม่ใช่ แนวทางในการป้องกันมลพิษทางอากาศ",
+          opts: [
+            "นางสาวกังวาล สวมหน้ากากอนามัยเพื่อป้องกันไม่ให้ฝุ่นเข้าตา",
+            "นายบวกเพิ่ม ควรมีเครื่องฟอกอากาศไว้ที่บ้านเพื่อฟอกให้อากาศดีขึ้น",
+            "นายอันลบ หันมาใช้รถสาธารณะ เพื่อลดการปล่อยควันเสียจากท่อไอเสีย",
+            "นางสาวลันลา หยุดเผากระดาษเงิน กระดาษทองในช่วงตรุษจีน"
+          ],
+          ans: 0
+        },
+        {
+          q: "ข้อใดแสดงถึงพฤติกรรมที่สนับสนุนการลดขยะในระดับบุคคล",
+          opts: [
+            "ใช้กระติกน้ำแทนการซื้อขวดน้ำพลาสติก",
+            "ทิ้งเศษอาหารลงถังขยะรวม",
+            "ซื้อของทุกครั้งต้องใช้ถุงพลาสติก",
+            "รับหลอดพลาสติกแม้ไม่ต้องการ"
+          ],
+          ans: 0
+        },
+        {
+          q: "น้ำเสียจากโรงงานผลิตยางพารา โรงงานกลั่นน้ำมัน จัดอยู่ในน้ำเสียประเภทใด",
+          opts: [
+            "ทำให้ออกซิเจนลดลง",
+            "ทำให้รส กลิ่น และสีของน้ำเปลี่ยนไป",
+            "ทำลายทัศนียภาพแหล่งน้ำ",
+            "มีสารพิษปะปน"
+          ],
+          ans: 3
+        },
+        {
+          q: "การสั่งฟู้ดเดลิเวอรี่ 1 เมนู จะสร้างขยะประมาณกี่ชิ้น",
+          opts: [
+            "6 ชิ้น",
+            "2 ชิ้น",
+            "3 ชิ้น",
+            "5 ชิ้น"
+          ],
+          ans: 3
+        },
+        {
+          q: "การใช้สารเคมีในการเกษตรสามารถส่งผลกระทบต่อระบบนิเวศอย่างไร",
+          opts: [
+            "ไม่มีผลกระทบต่อระบบนิเวศ",
+            "ส่งผลให้เกิดมลพิษและลดความหลากหลายทางชีวภาพ",
+            "ทำให้ผลผลิตเพิ่มขึ้น",
+            "ช่วยลดโรคพืช"
+          ],
+          ans: 1
+        },
+        {
+          q: "ข้อใดเป็นการลดคาร์บอนฟุตพริ้นท์",
+          opts: [
+            "เลือกใช้พลังงานสะอาดและลดการใช้พลังงานไฟฟ้า",
+            "เลือกบริโภคเนื้อสัตว์ให้มากขึ้นและลดการบริโภคผัก",
+            "เลือกใช้พลาสติกแบบใช้ครั้งเดียวแล้วทิ้ง",
+            "เลือกการเดินทางด้วยเครื่องบินทุกครั้งที่เป็นไปได้"
+          ],
+          ans: 0
+        },
+        {
+          q: "แร่ธาตุหายากชนิดใดเป็นส่วนประกอบหลักที่สำคัญในแบตเตอรี่โทรศัพท์มือถือรุ่นปัจจุบัน",
+          opts: [
+            "ลิเทียม",
+            "ตะกั่ว",
+            "ทองแดง",
+            "ทองคำ"
+          ],
+          ans: 0
+        },
+        {
+          q: "ข้อใด ไม่ใช่ วิธีการที่จะช่วยรักษาป่าให้คงอยู่ได้อย่างยั่งยืน",
+          opts: [
+            "นายนัดปลูกป่าเพิ่มเท่าที่ตัดต้นไม้ไปใช้",
+            "นายศรีเลือกตัดต้นไม้ทุกขนาดในป่าเพื่อสร้างบ้าน",
+            "นายกรัฐมนตรียกเลิกการสัมปทานป่าไม้",
+            "กรมป่าไม้กำหนดเขตป่าสงวนเอาไว้ให้มากที่สุด"
+          ],
+          ans: 1
+        },
+        {
+          q: "ข้อใดเป็นปัญหาการเสื่อมของคุณภาพดิน",
+          opts: [
+            "การปลูกหญ้าแฝก",
+            "การปลูกมันสัมปะหลังเป็นระยะเวลา 10 ปี",
+            "การปลูกพืชหมุนเวียน",
+            "การไถและฝังกลบตอซังข้าว"
+          ],
+          ans: 1
+        },
+        {
+          q: "ข้อใดเป็นตัวอย่างของระบบนิเวศทางธรรมชาติ",
+          opts: [
+            "พื้นที่การเกษตร",
+            "ป่าฝนเขตร้อน",
+            "ฟาร์มเลี้ยงสัตว์",
+            "สวนสาธารณะ"
+          ],
+          ans: 1
+        },
+        {
+          q: "ข้อใด ไม่ใช่ สาเหตุที่ส่งผลกระทบต่อสิ่งแวดล้อม",
+          opts: [
+            "การขยายเศรษฐกิจอุตสาหกรรม",
+            "มีการปลูกโกงกางเพิ่มในพื้นที่เสื่อมโทรม",
+            "การพัฒนาทางวิทยาศาสตร์-เทคโนโลยี",
+            "การเพิ่มประชากรในอัตราการเกิด"
+          ],
+          ans: 1
+        },
+        {
+          q: "ข้อใดเป็นโรคที่เกิดจากสารหนู",
+          opts: [
+            "โรคไข้น้ำดำ",
+            "โรคผิวหนัง",
+            "โรคนิมามะตะ",
+            "โรคอิไตอิไต"
+          ],
+          ans: 1
+        },
+        {
+          q: "ข้อใดคือผลกระทบจาก \"ควันธูป\" ก่อฝุ่น PM10 ตัวการร้ายเสี่ยงเป็น \"โรค\"",
+          opts: [
+            "โรคตาแดง",
+            "โรคมะเร็งปอด",
+            "โรคอัลไซเมอร์",
+            "โรคไมเกรน"
+          ],
+          ans: 1
+        },
+        {
+          q: "บริการของระบบนิเวศประเภทใดที่ให้ทรัพยากรที่สามารถใช้ประโยชน์ได้โดยตรง",
+          opts: [
+            "บริการเชิงการผลิต",
+            "บริการเชิงการสนับสนุน",
+            "บริการเชิงวัฒนธรรม",
+            "บริการเชิงการควบคุม"
+          ],
+          ans: 0
+        },
+        {
+          q: "ข้อใดเป็นวิธีช่วยลดการปล่อยก๊าซเรือนกระจกในด้านการบริโภคอาหาร",
+          opts: [
+            "การเลือกซื้ออาหารจากฟาร์มท้องถิ่น",
+            "การเลือกอาหารที่บรรจุภัณฑ์พลาสติก",
+            "การซื้ออาหารที่มีการแปรรูปสูง",
+            "การซื้ออาหารที่นำเข้าจากต่างประเทศ"
+          ],
+          ans: 0
+        },
+        {
+          q: "แนวทางการจัดการซากโทรศัพท์มือถือและแบตเตอรี่ ข้อใดคือคำแนะนำที่ถูกต้องสำหรับผู้บริโภค",
+          opts: [
+            "ฝังดินในที่ห่างไกลเพื่อให้ย่อยสลายตามธรรมชาติ",
+            "ถอดแยกชิ้นส่วนที่บ้านเพื่อนำโลหะมีค่าไปขาย",
+            "เผาทำลายเพื่อกำจัดสารอันตรายให้หมดไป",
+            "ไม่ทิ้งซากโทรศัพท์และแบตเตอรี่ปะปนกับขยะทั่วไป"
+          ],
+          ans: 3
+        },
+        {
+          q: "วิธีการใดที่ช่วยลดมลพิษทางน้ำได้ดีที่สุด",
+          opts: [
+            "ลดการใช้พลังงานในโรงงาน",
+            "กำจัดขยะพลาสติกด้วยการเผา",
+            "การควบคุมการใช้สารเคมีในภาคการเกษตรและอุตสาหกรรม",
+            "การเพิ่มการใช้รถยนต์ส่วนตัว"
+          ],
+          ans: 2
+        },
+        {
+          q: "\"ผึ้งอาศัยน้ำหวานจากดอกไม้\" เพื่อความอยู่รอด ข้อใดถูกต้อง",
+          opts: [
+            "ความร่วมมือ (Mutualism)",
+            "การพึ่งพาอาศัย (Symbiosis)",
+            "การแข่งขัน",
+            "การล่าเหยื่อ"
+          ],
+          ans: 0
+        },
+        {
+          q: "ข้อใด ไม่ใช่ ประโยชน์ของขยะประเภทเศษอาหาร เศษผัก ผลไม้",
+          opts: [
+            "การเก็บไว้ถมดินใต้ถุนบ้านให้สูงขึ้น",
+            "การเลี้ยงไส้เดือนดิน",
+            "การหมักแก๊สชีวภาพ",
+            "การทำน้ำหมักชีวภาพ"
+          ],
+          ans: 0
+        },
+        {
+          q: "ข้อใดคือประโยชน์ของการปลูกต้นไม้ในชุมชน",
+          opts: [
+            "ลดความร้อนและเพิ่มคุณภาพอากาศ",
+            "เพิ่มการปล่อยก๊าซเรือนกระจก",
+            "ทำให้ชุมชนแออัด",
+            "ทำให้มีการขับรถมากขึ้น"
+          ],
+          ans: 0
+        },
+        {
+          q: "การทำให้สภาพของแหล่งน้ำตื้นเขินเกิดจากโรงงานประเภทใด",
+          opts: [
+            "โรงงานไฟฟ้าปรมาณู",
+            "โรงงานผงซักฟอก",
+            "โรงงานแปรรูปไม้",
+            "โรงงานอาหารกระป๋อง"
+          ],
+          ans: 1
+        },
+        {
+          q: "ข้อใดคือผลกระทบของน้ำที่ปนเปื้อนไนเตรทและฟอสเฟตที่มาจากครัวเรือนและการเกษตร",
+          opts: [
+            "ปรากฏการณ์น้ำขึ้น น้ำลง",
+            "ปรากฏการณ์ยูโทรฟิเคชั่น",
+            "ปรากฏการณ์เรือนกระจก",
+            "ปรากฏการณ์ปะการังฟอกขาว"
+          ],
+          ans: 1
+        },
+        {
+          q: "ลำดับขั้นของการจัดการขยะ (Waste Management Hierarchy) ที่ถูกต้องคือข้อใด",
+          opts: [
+            "Reduce → Reuse → Recycle",
+            "Reuse → Reduce → Recycle",
+            "Recycle → Reuse → Reduce",
+            "Recycle → Reduce → Reuse"
+          ],
+          ans: 0
+        },
+        {
+          q: "ข้อใดคือความหมายของ \"คาร์บอนฟุตพรินท์\" (Carbon Footprint)",
+          opts: [
+            "ปริมาณพลังงานไฟฟ้าที่ใช้ต่อปี",
+            "ปริมาณก๊าซเรือนกระจกที่ถูกปล่อยจากกิจกรรมของมนุษย์",
+            "ปริมาณของการใช้ไฟฟ้าจากแสงอาทิตย์",
+            "ปริมาณน้ำที่มนุษย์ใช้ต่อวัน"
+          ],
+          ans: 1
+        },
+        {
+          q: "ข้อใดเป็นสาเหตุที่ทำให้คาร์บอนฟุตพริ้นท์สูงขึ้น",
+          opts: [
+            "การปลูกต้นไม้ในที่พักอาศัย",
+            "การใช้รถยนต์ส่วนตัวบ่อยครั้ง",
+            "การใช้พลังงานหมุนเวียน",
+            "การเดินทางด้วยขนส่งสาธารณะ"
+          ],
+          ans: 1
+        },
+        {
+          q: "ตัวอย่างของบริการเชิงการควบคุมคืออะไร",
+          opts: [
+            "การควบคุมการปนเปื้อน",
+            "การจัดหาน้ำ",
+            "การผลิตอาหาร",
+            "การท่องเที่ยว"
+          ],
+          ans: 0
+        },
+        {
+          q: "ข้อใด ไม่ใช่ ผลกระทบที่เกิดจากมลพิษทางอากาศ",
+          opts: [
+            "การสังเคราะห์แสงของพืช",
+            "การบดบังแสงสว่างในการมองเห็น",
+            "การที่สัตว์เลี้ยงมีอายุยืนยาว",
+            "การกัดกร่อนสแตนเลส"
+          ],
+          ans: 2
+        },
+        {
+          q: "ข้อใดคือลักษณะของมลพิษทางดินที่เกิดจากอุตสาหกรรม",
+          opts: [
+            "การปล่อยก๊าซจากโรงงานอุตสาหกรรม",
+            "การเพิ่มปริมาณของสัตว์ในพื้นที่อุตสาหกรรม",
+            "การเพิ่มการเจริญเติบโตของพืชในพื้นที่อุตสาหกรรม",
+            "การปนเปื้อนของดินด้วยสารเคมีและโลหะหนัก"
+          ],
+          ans: 3
+        },
+        {
+          q: "นางสาวจันทร์เจ้า เลือกซื้อน้ำยาล้างจาน 1 ถุง เพื่อลดขยะจากบรรจุภัณฑ์ ตรงกับทฤษฏี R ข้อใด",
+          opts: [
+            "Reuse",
+            "Refill",
+            "Reject",
+            "Reduce"
+          ],
+          ans: 1
+        },
+        {
+          q: "ผลกระทบที่สำคัญของฝุ่น PM2.5 ต่อสุขภาพคือข้อใด",
+          opts: [
+            "ลดการเกิดฝนกรด",
+            "ส่งผลต่อการสังเคราะห์แสงของพืช",
+            "เพิ่มความเสี่ยงของโรคระบบทางเดินหายใจ และโรคหัวใจ",
+            "ทำให้เกิดภาวะโลกร้อน"
+          ],
+          ans: 2
+        },
+        {
+          q: "การบริโภคอาหารที่มีผลกระทบต่อคาร์บอนฟุตพรินท์มากที่สุดคืออาหารประเภทใด",
+          opts: [
+            "เนื้อสัตว์",
+            "ผลไม้",
+            "ธัญพืช",
+            "ผัก"
+          ],
+          ans: 0
+        },
+        {
+          q: "ข้อใดเป็นตัวอย่างของการนำหลัก Reuse มาใช้ในการจัดการขยะ",
+          opts: [
+            "การใช้แก้วน้ำพลาสติกแบบใช้ครั้งเดียวแล้วทิ้ง",
+            "การฝังขยะอินทรีย์โดยไม่ได้นำไปใช้ประโยชน์",
+            "การเผาขยะเพื่อลดปริมาณขยะในหลุมฝังกลบ",
+            "การนำขวดแก้วที่ใช้แล้วมาล้างและใช้ซ้ำ"
+          ],
+          ans: 3
+        },
+        {
+          q: "แนวคิด Zero Waste มีเป้าหมายสำคัญคืออะไร",
+          opts: [
+            "ลดของเสียให้เป็นศูนย์หรือใกล้ศูนย์ที่สุด",
+            "สร้างโรงไฟฟ้าขยะเพิ่มในทุกจังหวัดให้มากที่สุด",
+            "ฝังกลบขยะในพื้นที่ที่กำหนดให้น้อยที่สุด",
+            "เผาขยะให้หมดเพื่อผลิตพลังงานให้มากที่สุด"
+          ],
+          ans: 0
+        }
+      ];
+
+      const LABELS = ['ก', 'ข', 'ค', 'ง'];
+      let answered = new Set();
+
+      function buildQuiz() {
+        const form = document.getElementById('quizForm');
+        form.innerHTML = '';
+        questions.forEach((item, qi) => {
+          const card = document.createElement('div');
+          card.className = 'question-card';
+          card.id = `qcard-${qi}`;
+          const num = document.createElement('div');
+          num.className = 'question-number';
+          num.textContent = `ข้อที่ ${qi + 1} จาก ${questions.length}`;
+          const qtext = document.createElement('div');
+          qtext.className = 'question-text';
+          qtext.textContent = item.q;
+          const opts = document.createElement('div');
+          opts.className = 'options';
+          item.opts.forEach((opt, oi) => {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'option';
+            wrapper.id = `opt-${qi}-${oi}`;
+            const input = document.createElement('input');
+            input.type = 'radio';
+            input.name = `q${qi}`;
+            input.value = oi;
+            input.id = `inp-${qi}-${oi}`;
+            input.addEventListener('change', () => {
+              answered.add(qi);
+              updateProgress();
+            });
+            const label = document.createElement('label');
+            label.htmlFor = `inp-${qi}-${oi}`;
+            label.textContent = `${LABELS[oi]}. ${opt}`;
+            wrapper.appendChild(input);
+            wrapper.appendChild(label);
+            wrapper.addEventListener('click', () => {
+              input.checked = true;
+              input.dispatchEvent(new Event('change'));
+            });
+            opts.appendChild(wrapper);
+          });
+          card.appendChild(num);
+          card.appendChild(qtext);
+          card.appendChild(opts);
+          form.appendChild(card);
+        });
+      }
+
+      function updateProgress() {
+        const pct = Math.round((answered.size / questions.length) * 100);
+        document.getElementById('progressBar').style.width = pct + '%';
+        document.getElementById('progressLabel').textContent =
+          `คำถาม ${answered.size} / ${questions.length} ข้อที่ตอบแล้ว`;
+      }
+
+      function submitQuiz() {
+        let score = 0;
+        questions.forEach((item, qi) => {
+          const selected = document.querySelector(`input[name="q${qi}"]:checked`);
+          const userAns = selected ? parseInt(selected.value) : -1;
+          item.opts.forEach((_, oi) => {
+            const wrapper = document.getElementById(`opt-${qi}-${oi}`);
+            wrapper.classList.remove('correct', 'incorrect', 'reveal-correct');
+            if (oi === item.ans) {
+              if (userAns === oi) {
+                wrapper.classList.add('correct');
+                score++;
+              } else {
+                wrapper.classList.add('reveal-correct');
+              }
+            } else if (oi === userAns) {
+              wrapper.classList.add('incorrect');
+            }
+            const inp = document.getElementById(`inp-${qi}-${oi}`);
+            inp.disabled = true;
+          });
+        });
+
+        const total = questions.length;
+        const pct = Math.round((score / total) * 100);
+        document.getElementById('scoreNum').textContent = `${score} / ${total}`;
+        document.getElementById('scoreBar').style.width = pct + '%';
+
+        let msg = '';
+        if (pct >= 90) msg = '🏆 ยอดเยี่ยมมาก! คุณมีความรู้ด้านสิ่งแวดล้อมในระดับสูงมาก';
+        else if (pct >= 75) msg = '🌟 ดีมาก! คุณมีความเข้าใจด้านสิ่งแวดล้อมเป็นอย่างดี';
+        else if (pct >= 60) msg = '👍 ผ่าน! ยังมีบางส่วนที่สามารถพัฒนาเพิ่มเติมได้';
+        else if (pct >= 40) msg = '📚 ลองทบทวนความรู้เพิ่มเติมและลองทำใหม่อีกครั้ง';
+        else msg = '🌱 ศึกษาเนื้อหาเพิ่มเติมเกี่ยวกับสิ่งแวดล้อมแล้วมาลองใหม่นะคะ';
+        document.getElementById('scoreMsg').textContent = msg;
+
+        const card = document.getElementById('scoreCard');
+        card.classList.add('show');
+        card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+        document.getElementById('submitBtn').disabled = true;
+      }
+
+      function retryQuiz() {
+        answered.clear();
+        document.getElementById('scoreCard').classList.remove('show');
+        document.getElementById('submitBtn').disabled = false;
+        buildQuiz();
+        updateProgress();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      buildQuiz();
+      updateProgress();
+    </script>
+  </body>
+</html>
